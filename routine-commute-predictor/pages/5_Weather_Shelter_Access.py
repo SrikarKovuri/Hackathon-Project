@@ -214,13 +214,10 @@ m1, m2, m3, m4 = st.columns(4)
 
 with m1:
     st.metric("Interchange type", str(best_row["Interchange_Type"]))
-
 with m2:
     st.metric("Nearby bus shelters", shelter_count)
-
 with m3:
     st.metric("Nearest shelter", f"{nearest_dist:.0f} m")
-
 with m4:
     st.metric("Weather access rating", risk_label)
 

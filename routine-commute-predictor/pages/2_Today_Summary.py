@@ -2,95 +2,15 @@ import streamlit as st
 
 from src.prediction import get_demo_route_options, score_route_options, build_today_summary
 from src.recommendation import attach_route_statuses
+from src.ui import inject_global_css, render_top_nav
 
 
 st.set_page_config(
-    page_title="Today Summary | CommutePulse",
+    page_title="Today Summary | TripMate",
     page_icon="🌤️",
     layout="wide",
+    initial_sidebar_state="collapsed",
 )
-
-
-def inject_css() -> None:
-    st.markdown(
-        """
-        <style>
-        .stApp {
-            background: linear-gradient(180deg, #f8fbff 0%, #eef6ff 45%, #f7f4ff 100%);
-        }
-
-        .block-container {
-            padding-top: 2rem;
-            padding-bottom: 2rem;
-            max-width: 1200px;
-        }
-
-        h1, h2, h3 {
-            color: #102542;
-            letter-spacing: -0.02em;
-        }
-
-        .hero-card {
-            background: rgba(255, 255, 255, 0.85);
-            border: 1px solid #e7eefc;
-            padding: 1.7rem;
-            border-radius: 28px;
-            box-shadow: 0 18px 40px rgba(31, 59, 119, 0.09);
-        }
-
-        .soft-card {
-            background: rgba(255, 255, 255, 0.92);
-            border: 1px solid #e7eefc;
-            padding: 1.2rem;
-            border-radius: 24px;
-            box-shadow: 0 12px 30px rgba(31, 59, 119, 0.07);
-            height: 100%;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 0.32rem 0.75rem;
-            border-radius: 999px;
-            font-size: 0.86rem;
-            font-weight: 700;
-            margin-bottom: 0.75rem;
-            background: linear-gradient(135deg, #dff1ff 0%, #efe3ff 100%);
-            color: #244064;
-        }
-
-        .alert-box {
-            background: linear-gradient(135deg, #fff4dd 0%, #ffe8ef 100%);
-            border: 1px solid #ffe0af;
-            color: #5c4450;
-            padding: 1rem 1.1rem;
-            border-radius: 18px;
-            font-weight: 500;
-        }
-
-        .recommend-box {
-            background: linear-gradient(135deg, #e3fff5 0%, #e8f1ff 100%);
-            border: 1px solid #d7efe6;
-            color: #284c4b;
-            padding: 1rem 1.1rem;
-            border-radius: 18px;
-        }
-
-        .small-note {
-            color: #62728d;
-            font-size: 0.95rem;
-        }
-
-        div[data-testid="stMetric"] {
-            background: rgba(255,255,255,0.94);
-            border: 1px solid #e8eefc;
-            padding: 1rem;
-            border-radius: 22px;
-            box-shadow: 0 10px 24px rgba(31, 59, 119, 0.07);
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
 
 
 def refresh_predictions() -> None:
@@ -116,8 +36,9 @@ def refresh_predictions() -> None:
     st.session_state.today_summary = today_summary
 
 
-inject_css()
+inject_global_css()
 refresh_predictions()
+render_top_nav("today")
 
 profile = st.session_state.user_profile
 today = st.session_state.today_summary
@@ -125,7 +46,7 @@ today = st.session_state.today_summary
 st.markdown(
     f"""
     <div class="hero-card">
-        <div class="badge">30-second daily check-in</div>
+        <div class="pill">30-second daily check-in</div>
         <h1 style="margin-top: 0.2rem; margin-bottom: 0.35rem;">Good morning, {profile['name']}.</h1>
         <p class="small-note" style="font-size: 1rem; margin-bottom: 0;">
             Here's your personalised commute summary for <strong>{profile['origin']} → {profile['destination']}</strong>.
@@ -140,13 +61,10 @@ m1, m2, m3, m4 = st.columns(4)
 
 with m1:
     st.metric("Expected duration", f"{today['expected_duration']} min")
-
 with m2:
     st.metric("Stress score", f"{today['stress_score']}/100")
-
 with m3:
     st.metric("Reliability", today["reliability"])
-
 with m4:
     st.metric("Usual departure", profile["departure_time"])
 
@@ -157,7 +75,7 @@ with left:
     st.markdown(
         f"""
         <div class="soft-card">
-            <h3 style="margin-top:0;">Network alert</h3>
+            <h3 class="section-title">Network alert</h3>
             <div class="alert-box">{today['alert']}</div>
             <p class="small-note" style="margin-top: 1rem; margin-bottom: 0;">
                 Usual route: {today['usual_route']}
@@ -172,7 +90,7 @@ with left:
     st.markdown(
         f"""
         <div class="soft-card">
-            <h3 style="margin-top:0;">Recommended action</h3>
+            <h3 class="section-title">Recommended action</h3>
             <div class="recommend-box">
                 <strong>{today['recommendation']}</strong>
             </div>
@@ -191,11 +109,10 @@ with right:
     st.markdown(
         """
         <div class="soft-card">
-            <h3 style="margin-top:0;">How today feels</h3>
+            <h3 class="section-title">How today feels</h3>
             <p class="small-note">
-                This trip is predicted using route reliability, transfer burden,
-                walking intensity, crowding, and delay exposure. The goal is to
-                summarise commuter friction quickly, not just raw travel time.
+                This trip is predicted using reliability, transfer burden, walking effort,
+                crowding, and delay exposure. The goal is to summarise commuter friction quickly.
             </p>
         </div>
         """,
@@ -215,10 +132,8 @@ with right:
     st.markdown(
         f"""
         <div class="soft-card">
-            <h3 style="margin-top:0;">Stress interpretation</h3>
-            <p style="font-size: 2rem; font-weight: 700; color: #102542; margin-bottom: 0.2rem;">
-                {stress_label}
-            </p>
+            <h3 class="section-title">Stress interpretation</h3>
+            <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0.2rem;">{stress_label}</p>
             <p class="small-note">
                 Your current preference profile places extra weight on low-stress travel,
                 so direct and reliable routes are favoured more heavily than small time savings.
@@ -233,7 +148,7 @@ with right:
     st.markdown(
         f"""
         <div class="soft-card">
-            <h3 style="margin-top:0;">Preference snapshot</h3>
+            <h3 class="section-title">Preference snapshot</h3>
             <p class="small-note" style="margin-bottom:0;">
                 Priority: {profile['priority']}<br>
                 Speed weighting: {profile['weights']['speed']}%<br>
@@ -244,6 +159,3 @@ with right:
         """,
         unsafe_allow_html=True,
     )
-
-st.write("")
-st.caption("This page is the core demo screen: a fast, personalised morning briefing built for routine commuters.")
