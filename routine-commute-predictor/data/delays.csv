@@ -1,0 +1,7 @@
+line,date,time_window,avg_delay_min,delay_risk,status
+T1 Western Line,2026-04-18,Morning Peak,6,0.62,Minor delays
+T2 Inner West & Leppington,2026-04-18,Morning Peak,4,0.35,Good service
+T1 Express,2026-04-18,Morning Peak,2,0.20,On time
+T1 North Shore Line,2026-04-18,Morning Peak,3,0.18,On time
+T9 Northern Line,2026-04-18,Morning Peak,5,0.40,Trackwork impacts
+Metro,2026-04-18,Morning Peak,1,0.10,Strong service

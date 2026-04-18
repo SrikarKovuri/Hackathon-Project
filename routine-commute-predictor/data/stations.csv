@@ -1,0 +1,11 @@
+station_id,station_name,suburb,latitude,longitude,interchange_type,lines
+S1,Parramatta,Parramatta,-33.8170,151.0034,Major Interchange,"T1 Western Line; T5 Cumberland Line"
+S2,Central,Haymarket,-33.8830,151.2070,Major Interchange,"T1; T2; T3; T4; T8; Light Rail; Regional"
+S3,Redfern,Redfern,-33.8928,151.1982,Major Interchange,"T1; T2; T3; T8"
+S4,Town Hall,Sydney,-33.8737,151.2066,CBD Interchange,"T1; T2; T3; T4; T8"
+S5,Wynyard,Sydney,-33.8668,151.2067,CBD Interchange,"T1; T2; T3; T4; T8"
+S6,Strathfield,Strathfield,-33.8733,151.0948,Major Interchange,"T1; T2; T9"
+S7,Chatswood,Chatswood,-33.7969,151.1822,Metro Interchange,"T1 North Shore; Metro"
+S8,Blacktown,Blacktown,-33.7688,150.9080,Suburban Hub,"T1 Western Line"
+S9,Lidcombe,Lidcombe,-33.8648,151.0471,Interchange,"T1; T2; Olympic Park"
+S10,North Sydney,North Sydney,-33.8403,151.2070,CBD Fringe,"T1 North Shore"

@@ -1,0 +1,6 @@
+disruption_id,line,severity,title,description,affected_station,recommended_action
+D1,T1 Western Line,Medium,Tighter transfer windows,Minor rolling delays are affecting reliability on western inbound services.,Redfern,Leave 10 minutes earlier or consider a direct option
+D2,T9 Northern Line,Low,Trackwork carryover,Some services may have slightly extended dwell times during the morning peak.,Strathfield,Allow small buffer time
+D3,T1 North Shore Line,Low,Platform crowding,Higher than normal passenger load reported on selected CBD-bound services.,Chatswood,Board earlier if possible
+D4,T2 Inner West & Leppington,Low,Good operating conditions,Services are running close to timetable this morning.,Town Hall,No change needed
+D5,Metro,Low,Strong service frequency,High frequency operations reduce waiting time and missed connection risk.,Chatswood,Use as reliable fallback

@@ -1,0 +1,7 @@
+route_id,route_name,origin,destination,line,route_type,typical_duration_min,typical_transfers,typical_reliability
+R1,Usual Route,Parramatta,Central,T1 Western Line,Train,41,2,61
+R2,Lower-Stress Route,Parramatta,Central,T1 Express,Train,46,0,86
+R3,Balanced Route,Parramatta,Central,T2 + T1,Train,43,1,73
+R4,Fast CBD Run,Strathfield,Town Hall,T1 Western Line,Train,24,0,80
+R5,Reliable North Route,Chatswood,Wynyard,T1 North Shore Line,Train,19,0,88
+R6,Western Peak Option,Blacktown,Central,T1 Western Line,Train,52,1,66
