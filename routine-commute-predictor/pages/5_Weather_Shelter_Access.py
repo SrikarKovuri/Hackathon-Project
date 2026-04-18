@@ -5,71 +5,15 @@ import math
 import pandas as pd
 import streamlit as st
 
+from src.ui import inject_global_css, render_top_nav
+
 
 st.set_page_config(
-    page_title="Weather Shelter Access | CommutePulse",
+    page_title="Weather Shelter Access | TripMate",
     page_icon="🌧️",
     layout="wide",
+    initial_sidebar_state="collapsed",
 )
-
-
-def inject_css() -> None:
-    st.markdown(
-        """
-        <style>
-        .stApp {
-            background: linear-gradient(180deg, #f8fbff 0%, #eef6ff 45%, #f7f4ff 100%);
-        }
-
-        .block-container {
-            padding-top: 2rem;
-            padding-bottom: 2rem;
-            max-width: 1200px;
-        }
-
-        .page-card {
-            background: rgba(255,255,255,0.9);
-            border: 1px solid #e7eefc;
-            padding: 1.5rem;
-            border-radius: 28px;
-            box-shadow: 0 18px 40px rgba(31, 59, 119, 0.09);
-        }
-
-        .soft-card {
-            background: rgba(255,255,255,0.94);
-            border: 1px solid #e7eefc;
-            padding: 1.2rem;
-            border-radius: 22px;
-            box-shadow: 0 12px 28px rgba(31, 59, 119, 0.07);
-            height: 100%;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 0.3rem 0.75rem;
-            border-radius: 999px;
-            font-size: 0.86rem;
-            font-weight: 700;
-            margin-bottom: 0.75rem;
-            background: linear-gradient(135deg, #dff1ff 0%, #efe3ff 100%);
-            color: #244064;
-        }
-
-        .subtle {
-            color: #62728d;
-        }
-
-        div[data-testid="stMetric"] {
-            background: rgba(255,255,255,0.94);
-            border: 1px solid #e8eefc;
-            padding: 1rem;
-            border-radius: 22px;
-            box-shadow: 0 10px 24px rgba(31, 59, 119, 0.07);
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
 
 
 def load_bike_data() -> pd.DataFrame:
@@ -139,12 +83,7 @@ def haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     return r * c
 
 
-def nearest_bus_shelter_count(
-    lat: float,
-    lon: float,
-    shelters_df: pd.DataFrame,
-    radius_m: float = 400,
-) -> int:
+def nearest_bus_shelter_count(lat: float, lon: float, shelters_df: pd.DataFrame, radius_m: float = 400) -> int:
     count = 0
     for _, row in shelters_df.iterrows():
         d = haversine_m(lat, lon, row["Latitude"], row["Longitude"])
@@ -153,11 +92,7 @@ def nearest_bus_shelter_count(
     return count
 
 
-def nearest_bus_shelter_distance(
-    lat: float,
-    lon: float,
-    shelters_df: pd.DataFrame,
-) -> float:
+def nearest_bus_shelter_distance(lat: float, lon: float, shelters_df: pd.DataFrame) -> float:
     if shelters_df.empty:
         return float("nan")
 
@@ -210,18 +145,15 @@ def recommendation_text(weather_type: str, shelter_count: int, nearest_dist: flo
     return "No recommendation available."
 
 
-inject_css()
-
-st.sidebar.image("assets/logo.png", use_container_width=True)
-st.sidebar.title("🚆 CommutePulse")
-st.sidebar.markdown("Your daily Sydney commute check-in.")
+inject_global_css()
+render_top_nav("weather")
 
 st.markdown(
     """
-    <div class="page-card">
-        <div class="badge">First-mile / last-mile resilience</div>
+    <div class="hero-card">
+        <div class="pill">First-mile / last-mile resilience</div>
         <h1 style="margin-top: 0.2rem; margin-bottom: 0.35rem;">Weather shelter access for riders and pedestrians</h1>
-        <p class="subtle" style="font-size: 1rem; margin-bottom: 0;">
+        <p class="small-note" style="font-size: 1rem; margin-bottom: 0;">
             This feature helps commuters who walk or cycle to public transport understand whether shelter
             is available near their interchange during heavy rain, storms, or extreme heat.
         </p>
@@ -246,39 +178,23 @@ if bus_df.empty:
     st.stop()
 
 bike_df["Nearby_Bus_Shelters_400m"] = bike_df.apply(
-    lambda row: nearest_bus_shelter_count(
-        row["Latitude"],
-        row["Longitude"],
-        bus_df,
-        radius_m=400,
-    ),
+    lambda row: nearest_bus_shelter_count(row["Latitude"], row["Longitude"], bus_df, radius_m=400),
     axis=1,
 )
 
 bike_df["Nearest_Bus_Shelter_m"] = bike_df.apply(
-    lambda row: nearest_bus_shelter_distance(
-        row["Latitude"],
-        row["Longitude"],
-        bus_df,
-    ),
+    lambda row: nearest_bus_shelter_distance(row["Latitude"], row["Longitude"], bus_df),
     axis=1,
 )
 
 st.write("")
-
 left, right = st.columns(2)
 
 with left:
-    weather_type = st.selectbox(
-        "Weather condition",
-        ["Heavy rain", "Extreme heat", "Storm"],
-    )
+    weather_type = st.selectbox("Weather condition", ["Heavy rain", "Extreme heat", "Storm"])
 
 with right:
-    station = st.selectbox(
-        "Choose an interchange / station area",
-        sorted(bike_df["Suburb"].dropna().unique().tolist()),
-    )
+    station = st.selectbox("Choose an interchange / station area", sorted(bike_df["Suburb"].dropna().unique().tolist()))
 
 selected = bike_df[bike_df["Suburb"] == station].copy()
 
@@ -309,20 +225,19 @@ with m4:
     st.metric("Weather access rating", risk_label)
 
 st.write("")
-
 a, b = st.columns([1.2, 0.8])
 
 with a:
     st.markdown(
         f"""
         <div class="soft-card">
-            <h3 style="margin-top:0;">Shelter and active travel summary</h3>
-            <p class="subtle">
+            <h3 class="section-title">Shelter and active travel summary</h3>
+            <p class="small-note">
                 <strong>Location:</strong> {best_row['Location']}<br>
                 <strong>Suburb:</strong> {best_row['Suburb']}<br>
                 <strong>Bike infrastructure type:</strong> {best_row['Type']}
             </p>
-            <p class="subtle">
+            <p class="small-note">
                 <strong>Bike lockers at location:</strong> {int(best_row['Total_Lockers_at_Location'])}<br>
                 <strong>Total shed spaces:</strong> {int(best_row['Total_Spaces_at_Shed'])}<br>
                 <strong>Bike rack spaces:</strong> {int(best_row['Bike_Rack_Spaces'])}<br>
@@ -350,13 +265,7 @@ with a:
 
     map_df = pd.concat([hub_map_df, bus_map_df[["lat", "lon", "label"]].head(80)], ignore_index=True)
 
-    st.markdown(
-        """
-        <div class="soft-card">
-            <h3 style="margin-top:0;">Map view</h3>
-        """,
-        unsafe_allow_html=True,
-    )
+    st.markdown('<div class="soft-card"><h3 class="section-title">Map view</h3>', unsafe_allow_html=True)
     st.map(map_df)
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -364,13 +273,12 @@ with b:
     st.markdown(
         f"""
         <div class="soft-card">
-            <h3 style="margin-top:0;">Recommendation</h3>
-            <p class="subtle">
+            <h3 class="section-title">Recommendation</h3>
+            <p class="small-note">
                 {recommendation}
             </p>
-            <p class="subtle" style="margin-bottom:0;">
-                This assessment combines nearby bus shelter density with bike-related interchange infrastructure,
-                helping users decide whether a walk/cycle transfer is still reasonable in poor weather.
+            <p class="small-note" style="margin-bottom:0;">
+                This assessment combines nearby bus shelter density with bike-related interchange infrastructure.
             </p>
         </div>
         """,
@@ -382,8 +290,8 @@ with b:
     st.markdown(
         """
         <div class="soft-card">
-            <h3 style="margin-top:0;">Why this matters</h3>
-            <p class="subtle" style="margin-bottom:0;">
+            <h3 class="section-title">Why this matters</h3>
+            <p class="small-note" style="margin-bottom:0;">
                 Most public transport apps optimise time. This feature adds resilience and comfort,
                 especially for commuters using active transport to reach train or bus services.
             </p>

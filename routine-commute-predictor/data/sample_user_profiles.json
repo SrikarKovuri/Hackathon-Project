@@ -1,0 +1,44 @@
+{
+    "default_user": {
+      "name": "Nawfal",
+      "origin": "Parramatta",
+      "destination": "Central",
+      "departure_time": "07:42",
+      "arrival_goal": "08:30",
+      "walking_tolerance": 8,
+      "priority": "Lower stress",
+      "weights": {
+        "speed": 30,
+        "stress": 50,
+        "reliability": 20
+      }
+    },
+    "fast_commuter": {
+      "name": "Alex",
+      "origin": "Strathfield",
+      "destination": "Town Hall",
+      "departure_time": "08:05",
+      "arrival_goal": "08:45",
+      "walking_tolerance": 5,
+      "priority": "Fastest route",
+      "weights": {
+        "speed": 60,
+        "stress": 20,
+        "reliability": 20
+      }
+    },
+    "reliability_first": {
+      "name": "Mia",
+      "origin": "Chatswood",
+      "destination": "Wynyard",
+      "departure_time": "07:55",
+      "arrival_goal": "08:35",
+      "walking_tolerance": 6,
+      "priority": "Highest reliability",
+      "weights": {
+        "speed": 20,
+        "stress": 20,
+        "reliability": 60
+      }
+    }
+  }
