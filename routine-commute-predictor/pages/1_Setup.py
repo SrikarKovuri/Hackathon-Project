@@ -1,5 +1,8 @@
 import streamlit as st
 
+from src.prediction import get_demo_route_options, score_route_options, build_today_summary
+from src.recommendation import attach_route_statuses
+
 
 st.set_page_config(
     page_title="Setup | CommutePulse",
@@ -81,6 +84,17 @@ def inject_css() -> None:
     )
 
 
+def refresh_predictions() -> None:
+    profile = st.session_state.user_profile
+    raw_routes = get_demo_route_options(profile)
+    scored_routes = score_route_options(profile, raw_routes)
+    enriched_routes = attach_route_statuses(scored_routes)
+    today_summary = build_today_summary(profile, enriched_routes)
+
+    st.session_state.route_options = enriched_routes
+    st.session_state.today_summary = today_summary
+
+
 def initialise_state() -> None:
     if "user_profile" not in st.session_state:
         st.session_state.user_profile = {
@@ -93,6 +107,7 @@ def initialise_state() -> None:
             "priority": "Lower stress",
             "weights": {"speed": 30, "stress": 50, "reliability": 20},
         }
+    refresh_predictions()
 
 
 inject_css()
@@ -199,6 +214,7 @@ if submitted:
             "reliability": reliability,
         },
     }
+    refresh_predictions()
     st.success("Your commute profile has been updated for this demo session.")
 
 st.write("")

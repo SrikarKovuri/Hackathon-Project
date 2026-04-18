@@ -1,6 +1,9 @@
 import pandas as pd
 import streamlit as st
 
+from src.prediction import get_demo_route_options, score_route_options
+from src.recommendation import attach_route_statuses
+
 
 st.set_page_config(
     page_title="Route Comparison | CommutePulse",
@@ -69,41 +72,29 @@ def inject_css() -> None:
     )
 
 
-def initialise_state() -> None:
-    if "route_options" not in st.session_state:
-        st.session_state.route_options = [
-            {
-                "name": "Usual route",
-                "duration": 41,
-                "transfers": 2,
-                "stress": 74,
-                "reliability": 61,
-                "status": "At risk",
-                "notes": "Fastest on paper, but sensitive to delays.",
-            },
-            {
-                "name": "Lower-stress option",
-                "duration": 46,
-                "transfers": 0,
-                "stress": 29,
-                "reliability": 86,
-                "status": "Recommended",
-                "notes": "Direct service with better reliability this morning.",
-            },
-            {
-                "name": "Balanced option",
-                "duration": 43,
-                "transfers": 1,
-                "stress": 48,
-                "reliability": 73,
-                "status": "Stable",
-                "notes": "Slightly longer but safer than your usual route.",
-            },
-        ]
+def refresh_predictions() -> None:
+    if "user_profile" not in st.session_state:
+        st.session_state.user_profile = {
+            "name": "Nawfal",
+            "origin": "Parramatta",
+            "destination": "Central",
+            "departure_time": "07:42",
+            "arrival_goal": "08:30",
+            "walking_tolerance": 8,
+            "priority": "Lower stress",
+            "weights": {"speed": 30, "stress": 50, "reliability": 20},
+        }
+
+    profile = st.session_state.user_profile
+    raw_routes = get_demo_route_options(profile)
+    scored_routes = score_route_options(profile, raw_routes)
+    enriched_routes = attach_route_statuses(scored_routes)
+
+    st.session_state.route_options = enriched_routes
 
 
 inject_css()
-initialise_state()
+refresh_predictions()
 
 routes = st.session_state.route_options
 df = pd.DataFrame(routes)
@@ -139,6 +130,7 @@ for idx, route in enumerate(routes):
                 <p style="margin: 0.35rem 0;"><strong>Transfers:</strong> {route['transfers']}</p>
                 <p style="margin: 0.35rem 0;"><strong>Stress:</strong> {route['stress']}/100</p>
                 <p style="margin: 0.35rem 0;"><strong>Reliability:</strong> {route['reliability']}/100</p>
+                <p style="margin: 0.35rem 0;"><strong>Stress level:</strong> {route['stress_label']}</p>
             </div>
             """,
             unsafe_allow_html=True,
@@ -146,7 +138,22 @@ for idx, route in enumerate(routes):
 
 st.write("")
 st.subheader("Detailed comparison")
-st.dataframe(df, use_container_width=True, hide_index=True)
+
+comparison_df = df[
+    ["name", "duration", "transfers", "stress", "stress_label", "reliability", "status", "notes"]
+].copy()
+comparison_df.columns = [
+    "Route",
+    "Duration (min)",
+    "Transfers",
+    "Stress Score",
+    "Stress Level",
+    "Reliability",
+    "Status",
+    "Notes",
+]
+
+st.dataframe(comparison_df, use_container_width=True, hide_index=True)
 
 st.write("")
 left, right = st.columns([1.05, 0.95])

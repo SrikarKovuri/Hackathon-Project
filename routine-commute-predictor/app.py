@@ -1,5 +1,8 @@
 import streamlit as st
 
+from src.prediction import get_demo_route_options, score_route_options, build_today_summary
+from src.recommendation import attach_route_statuses
+
 
 st.set_page_config(
     page_title="CommutePulse",
@@ -114,46 +117,18 @@ def initialise_state() -> None:
             },
         }
 
-    if "today_summary" not in st.session_state:
-        st.session_state.today_summary = {
-            "expected_duration": 41,
-            "stress_score": 74,
-            "reliability": "Medium",
-            "alert": "T1 Western Line delays are increasing transfer risk near Redfern.",
-            "recommendation": "Take the 7:32 service instead of your usual 7:42 train.",
-            "usual_route": "Parramatta → Redfern → Central",
-        }
+    refresh_predictions()
 
-    if "route_options" not in st.session_state:
-        st.session_state.route_options = [
-            {
-                "name": "Usual route",
-                "duration": 41,
-                "transfers": 2,
-                "stress": 74,
-                "reliability": 61,
-                "status": "At risk",
-                "notes": "Fastest on paper, but sensitive to delays.",
-            },
-            {
-                "name": "Lower-stress option",
-                "duration": 46,
-                "transfers": 0,
-                "stress": 29,
-                "reliability": 86,
-                "status": "Recommended",
-                "notes": "Direct service with better reliability this morning.",
-            },
-            {
-                "name": "Balanced option",
-                "duration": 43,
-                "transfers": 1,
-                "stress": 48,
-                "reliability": 73,
-                "status": "Stable",
-                "notes": "Slightly longer but safer than your usual route.",
-            },
-        ]
+
+def refresh_predictions() -> None:
+    profile = st.session_state.user_profile
+    raw_routes = get_demo_route_options(profile)
+    scored_routes = score_route_options(profile, raw_routes)
+    enriched_routes = attach_route_statuses(scored_routes)
+    today_summary = build_today_summary(profile, enriched_routes)
+
+    st.session_state.route_options = enriched_routes
+    st.session_state.today_summary = today_summary
 
     if "history_df" not in st.session_state:
         import pandas as pd
@@ -173,6 +148,7 @@ initialise_state()
 profile = st.session_state.user_profile
 today = st.session_state.today_summary
 
+st.sidebar.image("assets/logo.png", use_container_width=True)
 st.sidebar.title("🚆 CommutePulse")
 st.sidebar.markdown("Your daily Sydney commute check-in.")
 st.sidebar.page_link("app.py", label="Home", icon="🏠")
@@ -180,34 +156,41 @@ st.sidebar.page_link("pages/1_Setup.py", label="Setup", icon="⚙️")
 st.sidebar.page_link("pages/2_Today_Summary.py", label="Today Summary", icon="🌤️")
 st.sidebar.page_link("pages/3_Commute_History.py", label="Commute History", icon="📈")
 st.sidebar.page_link("pages/4_Route_Comparison.py", label="Route Comparison", icon="🧭")
+st.sidebar.page_link("pages/5_Weather_Shelter_Access.py", label="Weather Shelter Access", icon="🌧️")
 
-st.markdown(
-    """
-    <div class="hero-card">
-        <div class="pill">Routine commute predictor</div>
-        <div class="pill">Sydney Trains</div>
-        <div class="pill">Hackathon demo</div>
-        <h1 style="margin-top: 0.8rem; margin-bottom: 0.4rem;">Make your morning commute easier in under a minute.</h1>
-        <p class="subtle" style="font-size: 1.05rem;">
-            CommutePulse gives routine rail commuters a quick daily briefing:
-            what changed, how stressful the trip is likely to feel, and whether a better route exists today.
-        </p>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+logo_col, text_col = st.columns([1, 4])
+
+with logo_col:
+    st.image("./assets/logo.png", width=140)
+
+with text_col:
+    st.markdown(
+        """
+        <div class="hero-card">
+            <div class="pill">Routine commute predictor</div>
+            <div class="pill">Sydney Trains</div>
+            <div class="pill">Hackathon demo</div>
+            <h1 style="margin-top: 0.8rem; margin-bottom: 0.4rem;">Make your morning commute easier in under a minute.</h1>
+            <p class="subtle" style="font-size: 1.05rem;">
+                CommutePulse gives routine rail commuters a quick daily briefing:
+                what changed, how stressful the trip is likely to feel, and whether a better route exists today.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 st.write("")
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.metric("Expected duration today", f"{today['expected_duration']} min", "+3 min")
+    st.metric("Expected duration today", f"{today['expected_duration']} min")
 
 with col2:
-    st.metric("Stress score", f"{today['stress_score']}/100", "High")
+    st.metric("Stress score", f"{today['stress_score']}/100")
 
 with col3:
-    st.metric("Reliability", today["reliability"], "-1 level")
+    st.metric("Reliability", today["reliability"])
 
 st.write("")
 left, right = st.columns([1.35, 1])
